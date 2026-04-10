@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusCommerce | Storefront</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="store.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="store-nav">
+        <div class="nav-container">
+            <div class="store-logo">
+                <i class="ri-shopping-bag-3-fill"></i>
+                <h2>NexusCommerce</h2>
+            </div>
+            <div class="nav-links">
+                <a href="#products">Shop</a>
+                <a href="#" onclick="showAuthModal()">Register</a>
+                <a href="index.html" class="admin-link"><i class="ri-settings-4-line"></i> Admin Panel</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Welcome to the Future of Shopping</h1>
+            <p>Powered by a robust Microservices Architecture.</p>
+            <a href="#products" class="btn btn-primary">Browse Catalog</a>
+        </div>
+    </header>
+
+    <!-- Main Store Content -->
+    <main class="store-main" id="products">
+        <div class="section-title">
+            <h2>Featured Products</h2>
+            <p>Items available from our Product Service</p>
+        </div>
+
+        <!-- Product Grid (Will be populated by JS) -->
+        <div class="product-grid" id="productGrid">
+            <!-- Example Product Loading State -->
+            <div class="product-card">
+                <div class="product-img placeholder-img"><i class="ri-image-line"></i></div>
+                <div class="product-info">
+                    <h3>Loading Products...</h3>
+                    <p>Connecting to Gateway</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="store-footer">
+        <p>&copy; 2026 NexusCommerce Internship Project. Powered by Microservices.</p>
+    </footer>
+
+    <!-- Modals -->
+    <!-- Checkout/Order Modal -->
+    <div class="modal overlay hidden" id="orderModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('orderModal')"><i class="ri-close-line"></i></button>
+            <h2>Complete Purchase</h2>
+            <p>Ordering: <strong id="modalProductName">...</strong></p>
+            <form id="purchaseForm" onsubmit="submitPurchase(event)">
+                <input type="hidden" id="purchaseProductId">
+                <div class="input-group">
+                    <label>Your Customer ID</label>
+                    <input type="text" id="purchaseCustomerId" placeholder="Enter your ID to buy" required>
+                    <small>Need an ID? Register first!</small>
+                </div>
+                <div class="input-group">
+                    <label>Quantity</label>
+                    <input type="number" id="purchaseQuantity" value="1" min="1" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Confirm Order</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal overlay hidden" id="authModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('authModal')"><i class="ri-close-line"></i></button>
+            <h2>Create an Account</h2>
+            <p>Join NexusCommerce today.</p>
+            <form id="storeRegisterForm" onsubmit="submitRegistration(event)">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="regName" placeholder="e.g. John Doe" required>
+                </div>
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="regEmail" placeholder="john@example.com" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Register</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden">
+        <i id="toast-icon" class="ri-information-line"></i>
+        <span id="toast-message">Message</span>
+    </div>
+
+    <script src="store.js"></script>
+</body>
+</html>

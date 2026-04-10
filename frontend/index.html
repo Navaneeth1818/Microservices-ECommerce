@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusCommerce | Admin Portal</title>
+    <meta name="description" content="A premium administration interface for managing Customers, Products, and Orders.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="ri-shopping-bag-3-line logo-icon"></i>
+                <h2>NexusCommerce<span>.</span></h2>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-link active" data-target="dashboard-section" onclick="showSection('dashboard-section')">
+                    <i class="ri-dashboard-line"></i> Overview
+                </button>
+                <button class="nav-link" data-target="users-section" onclick="showSection('users-section')">
+                    <i class="ri-user-smile-line"></i> Customers
+                </button>
+                <button class="nav-link" data-target="products-section" onclick="showSection('products-section')">
+                    <i class="ri-box-3-line"></i> Inventory
+                </button>
+                <button class="nav-link" data-target="orders-section" onclick="showSection('orders-section')">
+                    <i class="ri-shopping-cart-2-line"></i> Orders
+                </button>
+                <button class="nav-link" data-target="settings-section" onclick="showSection('settings-section')">
+                    <i class="ri-settings-3-line"></i> Gateway Settings
+                </button>
+            </nav>
+            <div style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1)">
+                <a href="store.html" style="text-decoration: none;">
+                    <button class="btn btn-secondary" style="width: 100%; border-radius: 8px;">
+                        <i class="ri-store-2-line"></i> View Storefront
+                    </button>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-titles">
+                    <h1 id="page-title">Store Overview</h1>
+                    <p id="page-subtitle">Real-time management of your E-commerce platform.</p>
+                </div>
+                <div class="header-actions">
+                    <div class="status-badge" id="gateway-status">
+                        <span class="pulse-dot"></span> Gateway Checking...
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                
+                <!-- Dashboard Overview Section -->
+                <section id="dashboard-section" class="section active">
+                    <div class="stats-grid">
+                        <div class="stat-card glass-card">
+                            <div class="stat-icon user-icon"><i class="ri-team-line"></i></div>
+                            <div class="stat-details">
+                                <h3>Customers</h3>
+                                <p>Operational</p>
+                            </div>
+                        </div>
+                        <div class="stat-card glass-card">
+                            <div class="stat-icon product-icon"><i class="ri-shopping-bag-3-line"></i></div>
+                            <div class="stat-details">
+                                <h3>Products</h3>
+                                <p>Operational</p>
+                            </div>
+                        </div>
+                        <div class="stat-card glass-card">
+                            <div class="stat-icon order-icon"><i class="ri-exchange-dollar-line"></i></div>
+                            <div class="stat-details">
+                                <h3>Orders</h3>
+                                <p>Operational</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="welcome-banner glass-card">
+                        <div class="banner-content">
+                            <h2>Welcome to NexusCommerce Admin</h2>
+                            <p>This panel connects directly to your E-commerce backend. Navigate the side menu to manage your store's customers, inventory, and orders seamlessly.</p>
+                            <br>
+                            <p><strong>Note for Integrator (Member 4/5):</strong> You can change the API Gateway URL in the "Gateway Settings" tab.</p>
+                        </div>
+                        <div class="banner-graphic">
+                            <i class="ri-server-line"></i>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Users Section -->
+                <section id="users-section" class="section">
+                    <div class="split-layout">
+                        <div class="form-container glass-card">
+                            <h3><i class="ri-user-add-line"></i> Register Customer</h3>
+                            <form id="createUserForm" onsubmit="createUser(event)">
+                                <div class="input-group">
+                                    <label for="userName">Full Name</label>
+                                    <input type="text" id="userName" placeholder="e.g. Jane Doe" required>
+                                </div>
+                                <div class="input-group">
+                                    <label for="userEmail">Email Address</label>
+                                    <input type="email" id="userEmail" placeholder="jane@example.com" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Register Customer <i class="ri-arrow-right-line"></i></button>
+                            </form>
+                        </div>
+
+                        <div class="form-container glass-card">
+                            <h3><i class="ri-search-eye-line"></i> Find Customer</h3>
+                            <form id="getUserForm" onsubmit="getUser(event)">
+                                <div class="input-group">
+                                    <label for="searchUserId">Customer ID</label>
+                                    <input type="text" id="searchUserId" placeholder="Enter Customer ID" required>
+                                </div>
+                                <button type="submit" class="btn btn-secondary">Find Customer <i class="ri-search-line"></i></button>
+                            </form>
+                            <div id="userDetailsResult" class="result-box hidden">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Products Section -->
+                <section id="products-section" class="section">
+                    <div class="form-container glass-card mx-auto" style="max-width: 600px;">
+                        <h3><i class="ri-add-box-line"></i> Add New Product</h3>
+                        <p class="form-instructions">Expand your store's catalog by adding new products to the inventory.</p>
+                        <form id="createProductForm" onsubmit="createProduct(event)">
+                            <div class="input-group">
+                                <label for="productName">Product Name</label>
+                                <input type="text" id="productName" placeholder="e.g. Wireless Headphones" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="productPrice">Price ($)</label>
+                                <input type="number" id="productPrice" step="0.01" placeholder="e.g. 99.99" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="productDesc">Description</label>
+                                <textarea id="productDesc" rows="3" placeholder="A short description of the product..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Product <i class="ri-box-3-line"></i></button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Orders Section -->
+                <section id="orders-section" class="section">
+                    <div class="form-container glass-card mx-auto" style="max-width: 600px;">
+                        <h3><i class="ri-shopping-cart-2-line"></i> Create Order</h3>
+                        <p class="form-instructions">Fulfill customer purchases by creating an order.</p>
+                        <form id="createOrderForm" onsubmit="createOrder(event)">
+                            <div class="input-group">
+                                <label for="orderUserId">Customer ID</label>
+                                <input type="text" id="orderUserId" placeholder="Enter ID of the purchasing customer" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="orderProductId">Product ID</label>
+                                <input type="text" id="orderProductId" placeholder="Enter ID of the product" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="orderQuantity">Quantity</label>
+                                <input type="number" id="orderQuantity" min="1" value="1" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Place Order <i class="ri-check-line"></i></button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Settings Section -->
+                <section id="settings-section" class="section">
+                    <div class="form-container glass-card mx-auto" style="max-width: 600px;">
+                        <h3><i class="ri-settings-4-line"></i> Gateway Configuration</h3>
+                        <p class="form-instructions">Configure the base URL of your backend API Gateway (handled by Member 4 / 5).</p>
+                        <form id="settingsForm" onsubmit="saveSettings(event)">
+                            <div class="input-group">
+                                <label for="gatewayUrl">API Gateway Base URL</label>
+                                <input type="url" id="gatewayUrl" value="http://localhost:8080" required>
+                                <small class="helper-text">Include protocol and port, no trailing slash (e.g. http://localhost:8080 or https://gateway.render.com)</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Configuration <i class="ri-save-line"></i></button>
+                        </form>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden">
+        <i id="toast-icon" class="ri-information-line"></i>
+        <span id="toast-message">Notification message</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
