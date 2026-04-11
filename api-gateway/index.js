@@ -9,19 +9,28 @@ app.use(cors());
 // USER SERVICE
 app.use("/users", createProxyMiddleware({
     target: "https://user-services-u4rn.onrender.com",
-    changeOrigin: true
+    changeOrigin: true,
+    pathRewrite: {
+        "^/users": ""
+    }
 }));
 
 // PRODUCT SERVICE
 app.use("/products", createProxyMiddleware({
     target: "https://product-service-mw02.onrender.com",
-    changeOrigin: true
+    changeOrigin: true,
+    pathRewrite: {
+        "^/products": "/products"
+    }
 }));
 
 // ORDER SERVICE
 app.use("/orders", createProxyMiddleware({
     target: "https://order-service-119e.onrender.com",
-    changeOrigin: true
+    changeOrigin: true,
+    pathRewrite: {
+        "^/orders": "/orders"
+    }
 }));
 
 const PORT = process.env.PORT || 5000;
