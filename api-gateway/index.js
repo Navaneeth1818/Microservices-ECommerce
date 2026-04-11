@@ -9,7 +9,10 @@ app.use(cors());
 // USER SERVICE
 app.use("/users", createProxyMiddleware({
     target: "https://user-services-u4rn.onrender.com",
-    changeOrigin: true
+    changeOrigin: true,
+    pathRewrite: {
+        "^/users": "/users"
+    }
 }));
 
 // PRODUCT SERVICE
@@ -17,7 +20,7 @@ app.use("/products", createProxyMiddleware({
     target: "https://product-service-mw02.onrender.com",
     changeOrigin: true,
     pathRewrite: {
-        "^/products": ""
+        "^/products": "/products"
     }
 }));
 
@@ -26,9 +29,14 @@ app.use("/orders", createProxyMiddleware({
     target: "https://order-service-119e.onrender.com",
     changeOrigin: true,
     pathRewrite: {
-        "^/orders": ""
+        "^/orders": "/orders"
     }
 }));
+
+// ROOT CHECK (IMPORTANT)
+app.get("/", (req, res) => {
+    res.send("API Gateway is running...");
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
