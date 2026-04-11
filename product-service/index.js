@@ -50,7 +50,7 @@ app.post('/products', (req, res) => {
 // ============================================
 // API 2: Get all products  →  GET /products
 // ============================================
-app.get('/', (req, res) => {
+app.get('/products', (req, res) => {
   // Fetch every row from the products table
   const products = db.prepare('SELECT * FROM products').all();
 
