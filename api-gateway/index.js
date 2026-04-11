@@ -7,24 +7,26 @@ const app = express();
 // Allow frontend to connect
 app.use(cors());
 
-// Route: User Service
+// USER SERVICE
 app.use("/users", createProxyMiddleware({
-    target: "http://user-service:3001",
+    target: "https://user-services-u4rn.onrender.com",
     changeOrigin: true
 }));
 
-// Route: Product Service
+// PRODUCT SERVICE
 app.use("/products", createProxyMiddleware({
-    target: "http://product-service:3002",
+    target: "https://product-service-mw02.onrender.com",
     changeOrigin: true
 }));
 
-// Route: Order Service
+// ORDER SERVICE
 app.use("/orders", createProxyMiddleware({
-    target: "http://order-service:3003",
+    target: "https://order-service-119e.onrender.com",
     changeOrigin: true
 }));
 
 // Start Gateway
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Running on port ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`API Gateway running on port ${PORT}`);
+});
