@@ -34,7 +34,7 @@ app.post('/orders', async (req, res) => {
   // Optional: verify the product actually exists by calling Product Service
   // This is the "communication between services" part!
   try {
-    const productCheck = await fetch(fetch("https://product-service-mw02.onrender.com/products");
+    const productCheck = await fetch("https://product-service-mw02.onrender.com/products");
     const products = await productCheck.json();
     const productExists = products.find(p => p.id === Number(product_id));
 
