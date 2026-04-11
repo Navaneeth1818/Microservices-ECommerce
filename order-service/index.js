@@ -58,7 +58,7 @@ app.post('/orders', async (req, res) => {
     res.status(500).json({ error: 'Could not connect to Product Service. Is it running?' });
   }
 });
-app.get('/', (req, res) => {
+app.get('/orders', (req, res) => {
   const orders = db.prepare('SELECT * FROM orders').all();
   res.json(orders);
 });
