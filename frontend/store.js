@@ -22,9 +22,13 @@ function closeModal(modalId) {
 // 1. Fetch & Display Products
 async function fetchProducts() {
     const grid = document.getElementById('productGrid');
+    grid.innerHTML = '<p>Connecting to Gateway...</p>';
+
     try {
-        const response = await fetch(`${gatewayUrl}/products`);
-        if (!response.ok) throw new Error();
+        const response = await fetch(`${gatewayUrl}/products`, {
+            signal: AbortSignal.timeout(10000)
+        });
+        if (!response.ok) throw new Error(`Status ${response.status}`);
 
         const products = await response.json();
         grid.innerHTML = '';
@@ -35,27 +39,29 @@ async function fetchProducts() {
         }
 
         products.forEach(product => {
-            const id = product.id;
             const card = document.createElement('div');
-
             card.className = 'product-card';
             card.innerHTML = `
                 <h3>${product.name}</h3>
-                <p>${product.description || ''}</p>
-                <p>₹${product.price}</p>
-                <button onclick="showOrderModal('${id}', '${product.name}')">Buy</button>
+                <p>${product.description || 'No description'}</p>
+                <p>&#8377;${product.price}</p>
+                <button onclick="showOrderModal('${product.id}', '${product.name}')">Buy</button>
             `;
             grid.appendChild(card);
         });
-
-    } catch {
-        grid.innerHTML = '<p>Failed to load products</p>';
+    } catch (err) {
+        grid.innerHTML = `<p>Failed to load products. Gateway may be waking up — try refreshing in 30 seconds.<br><small>${err.message}</small></p>`;
     }
 }
 
 // 2. Register Customer
 async function submitRegistration(event) {
     event.preventDefault();
+
+    const btn = event.target.querySelector('button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Registering...';
+    btn.disabled = true;
 
     const payload = {
         name: document.getElementById('regName').value,
@@ -66,20 +72,30 @@ async function submitRegistration(event) {
         const response = await fetch(`${gatewayUrl}/users`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(10000)
         });
 
-        if (!response.ok) throw new Error();
-
         const data = await response.json();
-        const id = data.id;
 
-        showStoreToast(`Registered! ID: ${id}`);
+        if (!response.ok) throw new Error(data.error || 'Registration failed');
+
+        // FIX: user service returns { userId: ... } not { id: ... }
+        const newId = data.userId || data.id;
+
+        showStoreToast(`Registered! Your Customer ID is: ${newId}`);
         closeModal('authModal');
-        document.getElementById('purchaseCustomerId').value = id;
+        event.target.reset();
 
-    } catch {
-        showStoreToast('Registration failed');
+        // Auto-fill the customer ID in the order modal if it's open
+        const purchaseIdField = document.getElementById('purchaseCustomerId');
+        if (purchaseIdField) purchaseIdField.value = newId;
+
+    } catch (err) {
+        showStoreToast(`Registration failed: ${err.message}`);
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     }
 }
 
@@ -87,30 +103,59 @@ async function submitRegistration(event) {
 async function submitPurchase(event) {
     event.preventDefault();
 
+    const btn = event.target.querySelector('button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Placing order...';
+    btn.disabled = true;
+
     const payload = {
-        user_id: document.getElementById('purchaseCustomerId').value,
-        product_id: document.getElementById('purchaseProductId').value,
+        user_id: parseInt(document.getElementById('purchaseCustomerId').value),
+        product_id: parseInt(document.getElementById('purchaseProductId').value),
         quantity: parseInt(document.getElementById('purchaseQuantity').value)
     };
+
+    // Guard: make sure user remembered to enter their ID
+    if (!payload.user_id) {
+        showStoreToast('Please enter your Customer ID first');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        return;
+    }
 
     try {
         const response = await fetch(`${gatewayUrl}/orders`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(10000)
         });
 
-        if (!response.ok) throw new Error();
+        const data = await response.json();
 
-        showStoreToast('Order placed successfully!');
+        if (!response.ok) throw new Error(data.error || 'Order failed');
+
+        showStoreToast(`Order placed! Order ID: ${data.orderId}`);
         closeModal('orderModal');
 
-    } catch {
-        showStoreToast('Order failed');
+    } catch (err) {
+        showStoreToast(`Order failed: ${err.message}`);
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     }
 }
 
-// Toast
+// Toast — uses the #message element visible in your store.html
 function showStoreToast(message) {
-    alert(message);
+    const toast = document.getElementById('message');
+    if (!toast) { console.log(message); return; }
+
+    toast.textContent = message;
+    toast.style.display = 'block';
+    toast.style.opacity = '1';
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => { toast.style.display = 'none'; }, 400);
+    }, 4000);
 }
