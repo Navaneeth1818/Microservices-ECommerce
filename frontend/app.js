@@ -50,43 +50,59 @@ async function createUser(event) {
             body: JSON.stringify(payload)
         });
 
-        if (!response.ok) throw new Error();
+        const data = await response.json();
 
-        showToast('Customer registered!', 'success');
+        if (!response.ok) throw new Error(data.error || 'Failed');
+
+        showToast(`Customer registered! ID: ${data.userId || data.id}`, 'success');
         event.target.reset();
-    } catch {
-        showToast('Error registering customer', 'error');
+    } catch (err) {
+        showToast(`Error registering customer: ${err.message}`, 'error');
     } finally {
         btn.innerHTML = originalText;
         btn.disabled = false;
     }
 }
 
-// 2. Get User
+// 2. Get User — fetches all users then finds by ID (service has no GET /users/:id)
 async function getUser(event) {
     event.preventDefault();
 
-    const userId = document.getElementById('searchUserId').value;
+    const userId = parseInt(document.getElementById('searchUserId').value);
     const resultBox = document.getElementById('userDetailsResult');
+    resultBox.innerHTML = 'Searching...';
+    resultBox.classList.remove('hidden');
 
     try {
-        const response = await fetch(`${gatewayUrl}/users/${userId}`);
-        const data = await response.json();
+        const response = await fetch(`${gatewayUrl}/users`);
+        if (!response.ok) throw new Error('Could not reach user service');
+
+        const users = await response.json();
+        const data = users.find(u => u.id === userId);
+
+        if (!data) {
+            resultBox.innerHTML = `<p style="color:red">No user found with ID ${userId}</p>`;
+            return;
+        }
 
         resultBox.innerHTML = `
-            <p>ID: ${data.id}</p>
-            <p>Name: ${data.name}</p>
-            <p>Email: ${data.email}</p>
+            <p><strong>ID:</strong> ${data.id}</p>
+            <p><strong>Name:</strong> ${data.name}</p>
+            <p><strong>Email:</strong> ${data.email}</p>
         `;
-        resultBox.classList.remove('hidden');
-    } catch {
-        showToast('User not found', 'error');
+    } catch (err) {
+        resultBox.innerHTML = `<p style="color:red">${err.message}</p>`;
     }
 }
 
 // 3. Create Product
 async function createProduct(event) {
     event.preventDefault();
+
+    const btn = event.target.querySelector('button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Adding...';
+    btn.disabled = true;
 
     const payload = {
         name: document.getElementById('productName').value,
@@ -101,12 +117,17 @@ async function createProduct(event) {
             body: JSON.stringify(payload)
         });
 
-        if (!response.ok) throw new Error();
+        const data = await response.json();
 
-        showToast('Product added!', 'success');
+        if (!response.ok) throw new Error(data.error || 'Failed');
+
+        showToast(`Product added! ID: ${data.productId}`, 'success');
         event.target.reset();
-    } catch {
-        showToast('Error adding product', 'error');
+    } catch (err) {
+        showToast(`Error adding product: ${err.message}`, 'error');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     }
 }
 
@@ -114,9 +135,14 @@ async function createProduct(event) {
 async function createOrder(event) {
     event.preventDefault();
 
+    const btn = event.target.querySelector('button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Placing...';
+    btn.disabled = true;
+
     const payload = {
-        user_id: document.getElementById('orderUserId').value,
-        product_id: document.getElementById('orderProductId').value,
+        user_id: parseInt(document.getElementById('orderUserId').value),
+        product_id: parseInt(document.getElementById('orderProductId').value),
         quantity: parseInt(document.getElementById('orderQuantity').value)
     };
 
@@ -127,34 +153,87 @@ async function createOrder(event) {
             body: JSON.stringify(payload)
         });
 
-        if (!response.ok) throw new Error();
+        const data = await response.json();
 
-        showToast('Order placed!', 'success');
+        if (!response.ok) throw new Error(data.error || 'Failed');
+
+        showToast(`Order placed! Order ID: ${data.orderId}`, 'success');
         event.target.reset();
-    } catch {
-        showToast('Error creating order', 'error');
+    } catch (err) {
+        showToast(`Error creating order: ${err.message}`, 'error');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     }
 }
 
 // Save Gateway URL
 function saveSettings(event) {
     event.preventDefault();
-    gatewayUrl = document.getElementById('gatewayUrl').value.replace(/\/$/, '');
+    const newUrl = document.getElementById('gatewayUrl').value.trim().replace(/\/$/, '');
+    if (!newUrl) {
+        showToast('Please enter a valid URL', 'error');
+        return;
+    }
+    gatewayUrl = newUrl;
     localStorage.setItem('gatewayUrl', gatewayUrl);
-    showToast('Gateway saved!', 'success');
+    showToast('Gateway URL saved!', 'success');
+    checkGatewayStatus();
 }
 
-// Toast
+// Toast — uses the notification element in your HTML
 function showToast(msg, type) {
-    alert(msg); // simple fallback (can keep your fancy UI if needed)
+    const toast = document.getElementById('notification');
+    if (!toast) { console.log(msg); return; }
+
+    toast.textContent = msg;
+    toast.className = '';
+    toast.classList.add('show', type === 'error' ? 'toast-error' : 'toast-success');
+
+    setTimeout(() => {
+        toast.classList.remove('show', 'toast-error', 'toast-success');
+    }, 3500);
 }
 
-// Gateway Check
+// Gateway + Services Status Check
 async function checkGatewayStatus() {
+    const gatewayEl  = document.getElementById('gateway-status');
+    const usersEl    = document.getElementById('users-status');
+    const productsEl = document.getElementById('products-status');
+    const ordersEl   = document.getElementById('orders-status');
+
+    const setStatus = (el, ok) => {
+        if (!el) return;
+        el.textContent = ok ? 'Operational' : 'Unreachable';
+        el.style.color  = ok ? 'green' : 'red';
+    };
+
+    if (gatewayEl) {
+        gatewayEl.textContent = 'Checking...';
+        gatewayEl.style.color = 'orange';
+    }
+
+    // Check gateway root
     try {
-        await fetch(`${gatewayUrl}/users`);
-        console.log("Gateway connected");
+        const res = await fetch(`${gatewayUrl}/`, { signal: AbortSignal.timeout(8000) });
+        setStatus(gatewayEl, res.ok || res.status < 500);
     } catch {
-        console.log("Gateway error");
+        setStatus(gatewayEl, false);
+    }
+
+    // Check each service via the gateway
+    const checks = [
+        { url: `${gatewayUrl}/users`,    el: usersEl },
+        { url: `${gatewayUrl}/products`, el: productsEl },
+        { url: `${gatewayUrl}/orders`,   el: ordersEl },
+    ];
+
+    for (const { url, el } of checks) {
+        try {
+            const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+            setStatus(el, res.ok);
+        } catch {
+            setStatus(el, false);
+        }
     }
 }
