@@ -18,7 +18,8 @@
             </div>
             <div class="nav-links">
                 <a href="#products">Shop</a>
-                <a href="#" onclick="showAuthModal()">Register</a>
+                <!-- FIX: use onclick with return false instead of href="#" to prevent page scroll jump -->
+                <a href="javascript:void(0)" onclick="showAuthModal()">Register</a>
                 <a href="index.html" class="admin-link"><i class="ri-settings-4-line"></i> Admin Panel</a>
             </div>
         </div>
@@ -40,9 +41,8 @@
             <p>Items available from our Product Service</p>
         </div>
 
-        <!-- Product Grid (Will be populated by JS) -->
+        <!-- Product Grid — populated by store.js fetchProducts() -->
         <div class="product-grid" id="productGrid">
-            <!-- Example Product Loading State -->
             <div class="product-card">
                 <div class="product-img placeholder-img"><i class="ri-image-line"></i></div>
                 <div class="product-info">
@@ -58,19 +58,19 @@
         <p>&copy; 2026 NexusCommerce Internship Project. Powered by Microservices.</p>
     </footer>
 
-    <!-- Modals -->
-    <!-- Checkout/Order Modal -->
+    <!-- Order / Checkout Modal -->
     <div class="modal overlay hidden" id="orderModal">
         <div class="modal-content">
             <button class="close-btn" onclick="closeModal('orderModal')"><i class="ri-close-line"></i></button>
             <h2>Complete Purchase</h2>
             <p>Ordering: <strong id="modalProductName">...</strong></p>
+            <br>
             <form id="purchaseForm" onsubmit="submitPurchase(event)">
                 <input type="hidden" id="purchaseProductId">
                 <div class="input-group">
                     <label>Your Customer ID</label>
-                    <input type="text" id="purchaseCustomerId" placeholder="Enter your ID to buy" required>
-                    <small>Need an ID? Register first!</small>
+                    <input type="number" id="purchaseCustomerId" placeholder="Enter your Customer ID" required>
+                    <small>Don't have one? Close this and click Register above.</small>
                 </div>
                 <div class="input-group">
                     <label>Quantity</label>
@@ -87,6 +87,8 @@
             <button class="close-btn" onclick="closeModal('authModal')"><i class="ri-close-line"></i></button>
             <h2>Create an Account</h2>
             <p>Join NexusCommerce today.</p>
+            <br>
+            <!-- FIX: form has onsubmit wired to submitRegistration, button is type="submit" -->
             <form id="storeRegisterForm" onsubmit="submitRegistration(event)">
                 <div class="input-group">
                     <label>Full Name</label>
@@ -102,7 +104,8 @@
     </div>
 
     <!-- Notification Toast -->
-    <div id="toast" class="toast hidden">
+    <!-- FIX: removed 'hidden' class from toast here — JS controls visibility via opacity/display -->
+    <div id="toast" class="toast" style="opacity:0;transform:translateY(20px);display:none">
         <i id="toast-icon" class="ri-information-line"></i>
         <span id="toast-message">Message</span>
     </div>
