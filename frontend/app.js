@@ -47,11 +47,11 @@ async function createUser(event) {
         const response = await fetch(`${gatewayUrl}/users`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(10000)
         });
 
         const data = await response.json();
-
         if (!response.ok) throw new Error(data.error || 'Failed');
 
         showToast(`Customer registered! ID: ${data.userId || data.id}`, 'success');
@@ -74,24 +74,26 @@ async function getUser(event) {
     resultBox.classList.remove('hidden');
 
     try {
-        const response = await fetch(`${gatewayUrl}/users`);
+        const response = await fetch(`${gatewayUrl}/users`, {
+            signal: AbortSignal.timeout(10000)
+        });
         if (!response.ok) throw new Error('Could not reach user service');
 
         const users = await response.json();
         const data = users.find(u => u.id === userId);
 
         if (!data) {
-            resultBox.innerHTML = `<p style="color:red">No user found with ID ${userId}</p>`;
+            resultBox.innerHTML = `<p style="color:#ef4444">No customer found with ID ${userId}</p>`;
             return;
         }
 
         resultBox.innerHTML = `
-            <p><strong>ID:</strong> ${data.id}</p>
-            <p><strong>Name:</strong> ${data.name}</p>
-            <p><strong>Email:</strong> ${data.email}</p>
+            <div class="data-row"><span class="data-label">ID</span><span class="data-value">${data.id}</span></div>
+            <div class="data-row"><span class="data-label">Name</span><span class="data-value">${data.name}</span></div>
+            <div class="data-row"><span class="data-label">Email</span><span class="data-value">${data.email}</span></div>
         `;
     } catch (err) {
-        resultBox.innerHTML = `<p style="color:red">${err.message}</p>`;
+        resultBox.innerHTML = `<p style="color:#ef4444">${err.message}</p>`;
     }
 }
 
@@ -114,11 +116,11 @@ async function createProduct(event) {
         const response = await fetch(`${gatewayUrl}/products`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(10000)
         });
 
         const data = await response.json();
-
         if (!response.ok) throw new Error(data.error || 'Failed');
 
         showToast(`Product added! ID: ${data.productId}`, 'success');
@@ -150,11 +152,11 @@ async function createOrder(event) {
         const response = await fetch(`${gatewayUrl}/orders`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(10000)
         });
 
         const data = await response.json();
-
         if (!response.ok) throw new Error(data.error || 'Failed');
 
         showToast(`Order placed! Order ID: ${data.orderId}`, 'success');
@@ -181,59 +183,79 @@ function saveSettings(event) {
     checkGatewayStatus();
 }
 
-// Toast — uses the notification element in your HTML
+// FIX: toast now correctly targets #toast + #toast-message + #toast-icon (matching index.html)
 function showToast(msg, type) {
-    const toast = document.getElementById('notification');
-    if (!toast) { console.log(msg); return; }
+    const toast = document.getElementById('toast');
+    const message = document.getElementById('toast-message');
+    const icon = document.getElementById('toast-icon');
 
-    toast.textContent = msg;
-    toast.className = '';
-    toast.classList.add('show', type === 'error' ? 'toast-error' : 'toast-success');
+    if (!toast || !message) { console.log(msg); return; }
 
-    setTimeout(() => {
-        toast.classList.remove('show', 'toast-error', 'toast-success');
-    }, 3500);
+    message.textContent = msg;
+
+    if (icon) {
+        icon.className = type === 'error'
+            ? 'ri-error-warning-line'
+            : 'ri-checkbox-circle-line';
+    }
+
+    toast.className = 'toast';
+    toast.classList.add('show', type === 'error' ? 'error' : 'success');
+
+    clearTimeout(toast._hideTimer);
+    toast._hideTimer = setTimeout(() => {
+        toast.classList.remove('show', 'error', 'success');
+        toast.classList.add('hidden');
+    }, 4000);
 }
 
-// Gateway + Services Status Check
+// FIX: gateway status now updates the dashboard stat cards AND header badge
 async function checkGatewayStatus() {
-    const gatewayEl  = document.getElementById('gateway-status');
-    const usersEl    = document.getElementById('users-status');
-    const productsEl = document.getElementById('products-status');
-    const ordersEl   = document.getElementById('orders-status');
+    const gatewayBadge = document.getElementById('gateway-status');
 
-    const setStatus = (el, ok) => {
-        if (!el) return;
-        el.textContent = ok ? 'Operational' : 'Unreachable';
-        el.style.color  = ok ? 'green' : 'red';
+    // Helper to update both the header badge and the dashboard stat card
+    const setServiceStatus = (serviceId, ok, label) => {
+        // Dashboard stat card <p> by id e.g. "users-status"
+        const el = document.getElementById(`${serviceId}-status`);
+        if (el) {
+            el.textContent = ok ? 'Operational' : 'Unreachable';
+            el.style.color = ok ? '' : '#ef4444';
+        }
     };
 
-    if (gatewayEl) {
-        gatewayEl.textContent = 'Checking...';
-        gatewayEl.style.color = 'orange';
+    if (gatewayBadge) {
+        gatewayBadge.innerHTML = '<span class="pulse-dot"></span> Checking...';
+        gatewayBadge.style.color = '';
     }
 
     // Check gateway root
+    let gatewayOk = false;
     try {
         const res = await fetch(`${gatewayUrl}/`, { signal: AbortSignal.timeout(8000) });
-        setStatus(gatewayEl, res.ok || res.status < 500);
+        gatewayOk = res.ok || res.status < 500;
     } catch {
-        setStatus(gatewayEl, false);
+        gatewayOk = false;
     }
 
-    // Check each service via the gateway
-    const checks = [
-        { url: `${gatewayUrl}/users`,    el: usersEl },
-        { url: `${gatewayUrl}/products`, el: productsEl },
-        { url: `${gatewayUrl}/orders`,   el: ordersEl },
+    if (gatewayBadge) {
+        gatewayBadge.innerHTML = gatewayOk
+            ? '<span class="pulse-dot"></span> Gateway Online'
+            : '<span class="pulse-dot" style="background:#ef4444"></span> Gateway Offline';
+    }
+
+    // Check each service via gateway and update dashboard cards
+    const services = [
+        { id: 'users',    url: `${gatewayUrl}/users` },
+        { id: 'products', url: `${gatewayUrl}/products` },
+        { id: 'orders',   url: `${gatewayUrl}/orders` },
     ];
 
-    for (const { url, el } of checks) {
+    for (const svc of services) {
         try {
-            const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-            setStatus(el, res.ok);
+            const res = await fetch(svc.url, { signal: AbortSignal.timeout(8000) });
+            setServiceStatus(svc.id, res.ok);
         } catch {
-            setStatus(el, false);
+            setServiceStatus(svc.id, false);
         }
     }
 }
