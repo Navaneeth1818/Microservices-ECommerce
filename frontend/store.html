@@ -1,196 +1,236 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NexusCommerce | Storefront</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="store.css">
-    <style>
-        /* My Orders section */
-        .my-orders-section { max-width:1200px; margin:0 auto 4rem; padding:0 2rem; }
-        .orders-table-wrap { overflow-x:auto; }
-        .orders-table { width:100%; border-collapse:collapse; font-size:.9rem; }
-        .orders-table th { text-align:left; padding:.65rem 1rem; background:#f9fafb; border-bottom:2px solid #e5e7eb; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; color:#6b7280; }
-        .orders-table td { padding:.85rem 1rem; border-bottom:1px solid #f3f4f6; vertical-align:middle; }
-        .orders-table tr:last-child td { border-bottom:none; }
-        .orders-table tr:hover td { background:#f9fafb; }
-        .badge { display:inline-block; padding:.2rem .65rem; border-radius:50px; font-size:.72rem; font-weight:600; }
-        .badge-pending { background:#fef9c3; color:#92400e; }
-        .badge-completed { background:#d1fae5; color:#065f46; }
-        /* Nav user pill */
-        .user-pill { display:flex; align-items:center; gap:.5rem; background:#f3f4f6; padding:.4rem .85rem .4rem .5rem; border-radius:50px; font-size:.85rem; font-weight:500; cursor:pointer; border:none; transition:background .2s; }
-        .user-pill:hover { background:#e5e7eb; }
-        .user-pill .avatar { width:28px; height:28px; border-radius:50%; background:var(--primary-color); color:white; display:flex; align-items:center; justify-content:center; font-size:.75rem; font-weight:700; }
-        /* Animations */
-        @keyframes fadeInUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-        .product-card { animation: fadeInUp .35s ease both; }
-        .product-card:nth-child(2){animation-delay:.05s}
-        .product-card:nth-child(3){animation-delay:.1s}
-        .product-card:nth-child(4){animation-delay:.15s}
-        .product-card:nth-child(5){animation-delay:.2s}
-        .product-card:nth-child(6){animation-delay:.25s}
-        /* Modal success state */
-        .order-success { text-align:center; padding:1.5rem 0; }
-        .order-success i { font-size:3.5rem; color:#10b981; display:block; margin-bottom:1rem; }
-        .order-success h3 { font-size:1.25rem; margin-bottom:.5rem; }
-        .order-success p { color:#6b7280; }
-        /* Search bar */
-        .search-bar { max-width:400px; position:relative; }
-        .search-bar input { width:100%; padding:.7rem 1rem .7rem 2.5rem; border:1px solid #e5e7eb; border-radius:50px; font-size:.9rem; background:#fff; color:#1f2937; outline:none; transition:border-color .2s,box-shadow .2s; }
-        .search-bar input:focus { border-color:var(--primary-color); box-shadow:0 0 0 3px rgba(59,130,246,.15); }
-        .search-bar i { position:absolute; left:.85rem; top:50%; transform:translateY(-50%); color:#9ca3af; font-size:1rem; }
-        .section-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:2rem; }
-        /* Toast enhancement */
-        .toast { transition: opacity .3s ease, transform .3s ease; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexusCommerce — Premium Shopping</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="store.css">
 </head>
 <body>
-    <nav class="store-nav">
-        <div class="nav-container">
-            <div class="store-logo">
-                <i class="ri-shopping-bag-3-fill"></i>
-                <h2>NexusCommerce</h2>
-            </div>
-            <div class="nav-links">
-                <a href="#products">Shop</a>
-                <a href="#my-orders" id="myOrdersLink" style="display:none">My Orders</a>
-                <!-- Shows Register when logged out, user pill when logged in -->
-                <div id="authArea">
-                    <a href="javascript:void(0)" onclick="showAuthModal()">Register / Login</a>
-                </div>
-            </div>
-        </div>
-    </nav>
 
-    <header class="hero">
-        <div class="hero-content">
-            <h1>Welcome to the Future of Shopping</h1>
-            <p>Powered by a robust Microservices Architecture.</p>
-            <a href="#products" class="btn btn-primary">Browse Catalog</a>
-        </div>
-    </header>
+<!-- ═══ NAVIGATION ═══ -->
+<nav class="store-nav" id="mainNav">
+  <div class="nav-container">
+    <a href="#" class="store-logo">
+      <i class="ri-shopping-bag-3-fill"></i>
+      Nexus<span class="logo-dot">.</span>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="#products">Shop</a>
+      <a href="#my-orders" id="myOrdersLink" style="display:none">My Orders</a>
+      <div id="authArea">
+        <a href="javascript:void(0)" onclick="showAuthModal()">Sign In / Register</a>
+      </div>
+    </div>
+  </div>
+</nav>
 
-    <main class="store-main" id="products">
-        <div class="section-header">
-            <div class="section-title" style="margin-bottom:0;text-align:left">
-                <h2>Featured Products</h2>
-                <p>Items available from our Product Service</p>
-            </div>
-            <div class="search-bar">
-                <i class="ri-search-line"></i>
-                <input type="text" id="searchInput" placeholder="Search products..." oninput="filterProducts(this.value)">
-            </div>
-        </div>
-        <div class="product-grid" id="productGrid">
-            <div class="product-card">
-                <div class="product-img placeholder-img"><i class="ri-loader-4-line"></i></div>
-                <div class="product-info"><h3>Loading...</h3><p>Connecting to Gateway</p></div>
-            </div>
-        </div>
-    </main>
+<!-- ═══ HERO ═══ -->
+<header class="hero">
+  <div class="orb-1 hero-orb"></div>
+  <div class="orb-2 hero-orb"></div>
+  <div class="orb-3 hero-orb"></div>
+  <div class="hero-badge"><i class="ri-shield-check-line"></i> Microservices Powered</div>
+  <h1>Shop the <span class="gradient-text">Future</span><br>of Commerce</h1>
+  <p>A showcase of distributed architecture — real products, real orders, real microservices talking to each other.</p>
+  <div class="hero-actions">
+    <a href="#products" class="btn btn-primary"><i class="ri-arrow-down-line"></i> Browse Products</a>
+    <a href="javascript:void(0)" onclick="showAuthModal()" class="btn btn-outline" id="heroRegBtn"><i class="ri-user-add-line"></i> Create Account</a>
+  </div>
+</header>
 
-    <!-- My Orders section (only visible when logged in) -->
-    <section class="my-orders-section" id="my-orders" style="display:none">
-        <div class="section-title">
-            <h2><i class="ri-receipt-line" style="color:var(--primary-color)"></i> My Orders</h2>
-            <p>Your order history from NexusCommerce</p>
-        </div>
-        <div style="background:white;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,.05);overflow:hidden">
-            <div style="padding:1rem 1.5rem;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center">
-                <span style="font-weight:600" id="myOrdersCount">Loading orders...</span>
-                <button onclick="loadMyOrders()" style="background:none;border:1px solid #e5e7eb;color:#6b7280;padding:.35rem .75rem;border-radius:6px;font-size:.85rem;cursor:pointer">
-                    <i class="ri-refresh-line"></i> Refresh
-                </button>
-            </div>
-            <div class="orders-table-wrap" id="myOrdersBody">
-                <div style="text-align:center;padding:2rem;color:#9ca3af"><i class="ri-loader-4-line"></i> Loading...</div>
-            </div>
-        </div>
-    </section>
+<!-- ═══ FEATURE STRIP ═══ -->
+<div class="features-strip">
+  <div class="features-strip-inner">
+    <div class="feature-item"><i class="ri-shield-check-line"></i> Secure Checkout</div>
+    <div class="feature-item"><i class="ri-server-line"></i> 3 Live Microservices</div>
+    <div class="feature-item"><i class="ri-map-pin-line"></i> Address Saved Per User</div>
+    <div class="feature-item"><i class="ri-history-line"></i> Order History</div>
+    <div class="feature-item"><i class="ri-customer-service-2-line"></i> Admin Dashboard</div>
+  </div>
+</div>
 
-    <footer class="store-footer">
-        <p>&copy; 2026 NexusCommerce Internship Project. Powered by Microservices.</p>
-    </footer>
+<!-- ═══ PRODUCT SECTION ═══ -->
+<main class="store-main" id="products">
+  <div class="section-header">
+    <div class="section-title">
+      <h2>Featured Products</h2>
+      <p id="productCount">Loading from Product Service...</p>
+    </div>
+    <div class="search-bar">
+      <i class="ri-search-line"></i>
+      <input type="text" id="searchInput" placeholder="Search products..." oninput="filterProducts(this.value)">
+    </div>
+  </div>
+  <div class="product-grid" id="productGrid">
+    <!-- Skeletons -->
+    <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line price"></div><div class="skeleton skeleton-btn"></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line price"></div><div class="skeleton skeleton-btn"></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line price"></div><div class="skeleton skeleton-btn"></div></div>
+  </div>
+</main>
 
-    <!-- Auth Modal (Register / Login) -->
-    <div class="modal overlay hidden" id="authModal">
-        <div class="modal-content">
-            <button class="close-btn" onclick="closeModal('authModal')"><i class="ri-close-line"></i></button>
-            <div id="authTabs" style="display:flex;gap:0;margin-bottom:1.5rem;border-bottom:2px solid #f3f4f6">
-                <button id="tabRegister" onclick="switchTab('register')" style="flex:1;padding:.75rem;border:none;background:none;font-weight:600;font-size:.95rem;cursor:pointer;border-bottom:3px solid var(--primary-color);color:var(--primary-color);margin-bottom:-2px">Register</button>
-                <button id="tabLogin" onclick="switchTab('login')" style="flex:1;padding:.75rem;border:none;background:none;font-weight:500;font-size:.95rem;cursor:pointer;color:#9ca3af">Have an ID? Login</button>
-            </div>
+<!-- ═══ MY ORDERS ═══ -->
+<section class="my-orders-section" id="my-orders" style="display:none">
+  <div class="section-title" style="margin-bottom:1.5rem">
+    <h2><i class="ri-receipt-line" style="color:var(--primary)"></i> My Orders</h2>
+    <p>Your complete order history from NexusCommerce</p>
+  </div>
+  <div class="panel-card">
+    <div class="panel-header">
+      <span id="myOrdersCount">Loading...</span>
+      <button onclick="loadMyOrders()" class="btn-ghost" style="display:flex;align-items:center;gap:.4rem">
+        <i class="ri-refresh-line"></i> Refresh
+      </button>
+    </div>
+    <div class="orders-table-wrap" id="myOrdersBody">
+      <div style="text-align:center;padding:2.5rem;color:var(--text-muted)">
+        <i class="ri-loader-4-line spin" style="font-size:1.5rem;display:block;margin-bottom:.75rem"></i>
+        Loading orders...
+      </div>
+    </div>
+  </div>
+</section>
 
-            <!-- Register tab -->
-            <div id="registerTab">
-                <h2 style="margin-bottom:.25rem">Create Account</h2>
-                <p style="color:#6b7280;margin-bottom:1.5rem;font-size:.9rem">Join NexusCommerce today.</p>
-                <form id="storeRegisterForm" onsubmit="submitRegistration(event)">
-                    <div class="input-group"><label>Full Name</label><input type="text" id="regName" placeholder="John Doe" required></div>
-                    <div class="input-group"><label>Email Address</label><input type="email" id="regEmail" placeholder="john@example.com" required></div>
-                    <button type="submit" class="btn btn-primary w-100">Create Account</button>
-                </form>
-            </div>
+<footer class="store-footer">
+  <span class="footer-logo">NexusCommerce.</span>
+  <p>&copy; 2026 Internship Project. Built with microservices architecture.</p>
+  <p style="margin-top:.5rem;font-size:.78rem;opacity:.5">User Service · Product Service · Order Service · API Gateway</p>
+</footer>
 
-            <!-- Login tab (enter existing Customer ID) -->
-            <div id="loginTab" style="display:none">
-                <h2 style="margin-bottom:.25rem">Welcome Back</h2>
-                <p style="color:#6b7280;margin-bottom:1.5rem;font-size:.9rem">Enter your Customer ID to access your account and orders.</p>
-                <form id="storeLoginForm" onsubmit="submitLogin(event)">
-                    <div class="input-group">
-                        <label>Customer ID</label>
-                        <input type="number" id="loginCustomerId" placeholder="e.g. 3" required>
-                        <small style="color:#9ca3af;font-size:.8rem">This was shown when you registered</small>
-                    </div>
-                    <div class="input-group">
-                        <label>Email</label>
-                        <input type="email" id="loginEmail" placeholder="your@email.com" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Login</button>
-                </form>
-            </div>
-        </div>
+<!-- ════════════════════════════════════════
+     MODALS
+════════════════════════════════════════ -->
+
+<!-- Auth Modal -->
+<div class="overlay hidden" id="authModal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal('authModal')"><i class="ri-close-line"></i></button>
+    <div class="auth-tabs" id="authTabs">
+      <button class="auth-tab active" id="tabRegister" onclick="switchTab('register')">Register</button>
+      <button class="auth-tab"        id="tabLogin"    onclick="switchTab('login')">Login</button>
     </div>
 
-    <!-- Order Modal -->
-    <div class="modal overlay hidden" id="orderModal">
-        <div class="modal-content">
-            <button class="close-btn" onclick="closeModal('orderModal')"><i class="ri-close-line"></i></button>
-            <div id="orderFormView">
-                <h2>Complete Purchase</h2>
-                <p style="margin:.5rem 0 1.5rem;color:#6b7280">Ordering: <strong id="modalProductName">...</strong></p>
-                <form id="purchaseForm" onsubmit="submitPurchase(event)">
-                    <input type="hidden" id="purchaseProductId">
-                    <div class="input-group" id="customerIdGroup">
-                        <label>Your Customer ID</label>
-                        <input type="number" id="purchaseCustomerId" placeholder="Enter your Customer ID" required>
-                        <small>Don't have one? Close and click Register.</small>
-                    </div>
-                    <div class="input-group">
-                        <label>Quantity</label>
-                        <input type="number" id="purchaseQuantity" value="1" min="1" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Confirm Order</button>
-                </form>
-            </div>
-            <!-- Success state shown after order placed -->
-            <div id="orderSuccessView" class="order-success" style="display:none">
-                <i class="ri-checkbox-circle-line"></i>
-                <h3>Order Placed!</h3>
-                <p id="orderSuccessMsg">Your order has been confirmed.</p>
-                <button onclick="closeModal('orderModal')" class="btn btn-primary" style="margin-top:1.5rem;width:auto;padding:.7rem 2rem">Continue Shopping</button>
-            </div>
+    <!-- Register -->
+    <div id="registerTab">
+      <p class="modal-title">Create Account</p>
+      <p class="modal-sub">Join NexusCommerce — takes 10 seconds.</p>
+      <form id="storeRegisterForm" onsubmit="submitRegistration(event)">
+        <div class="input-group"><label>Full Name</label><input type="text" id="regName" placeholder="Jane Doe" required autocomplete="name"></div>
+        <div class="input-group"><label>Email Address</label><input type="email" id="regEmail" placeholder="jane@example.com" required autocomplete="email"></div>
+        <button type="submit" class="btn btn-primary w-100" id="regBtn">
+          <i class="ri-user-add-line"></i> Create Account
+        </button>
+      </form>
+      <p style="text-align:center;margin-top:1rem;font-size:.82rem;color:var(--text-muted)">Already registered? <a href="javascript:void(0)" onclick="switchTab('login')" style="color:var(--primary);font-weight:600">Login →</a></p>
+    </div>
+
+    <!-- Login -->
+    <div id="loginTab" style="display:none">
+      <p class="modal-title">Welcome Back</p>
+      <p class="modal-sub">Enter your Customer ID + email to continue.</p>
+      <form id="storeLoginForm" onsubmit="submitLogin(event)">
+        <div class="input-group">
+          <label>Customer ID</label>
+          <input type="number" id="loginCustomerId" placeholder="e.g. 3" min="1" required>
+          <small>This was displayed when you registered</small>
         </div>
+        <div class="input-group"><label>Email</label><input type="email" id="loginEmail" placeholder="jane@example.com" required autocomplete="email"></div>
+        <button type="submit" class="btn btn-primary w-100" id="loginBtn">
+          <i class="ri-login-box-line"></i> Login
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Order Modal -->
+<div class="overlay hidden" id="orderModal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal('orderModal')"><i class="ri-close-line"></i></button>
+
+    <!-- Form view -->
+    <div id="orderFormView">
+      <p class="modal-title"><i class="ri-shopping-cart-line" style="color:var(--primary)"></i> Complete Purchase</p>
+      <p class="modal-sub">Ordering: <strong id="modalProductName" style="color:var(--text)">—</strong></p>
+      <form id="purchaseForm" onsubmit="submitPurchase(event)">
+        <input type="hidden" id="purchaseProductId">
+
+        <!-- Guest ID field (hidden when logged in) -->
+        <div class="input-group" id="customerIdGroup">
+          <label>Your Customer ID</label>
+          <input type="number" id="purchaseCustomerId" placeholder="Enter your Customer ID" min="1">
+          <small>Don't have one? <a href="javascript:void(0)" onclick="closeModal('orderModal');showAuthModal()" style="color:var(--primary);font-weight:600">Register first →</a></small>
+        </div>
+
+        <div class="input-group">
+          <label>Quantity</label>
+          <input type="number" id="purchaseQuantity" value="1" min="1" max="99" required>
+        </div>
+
+        <!-- Delivery Address -->
+        <div class="input-group">
+          <label>Delivery Address <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+          <textarea id="orderAddress" rows="2" placeholder="123 Main Street, City, State - PIN"></textarea>
+          <!-- Saved address pills rendered here -->
+          <div class="addr-suggestions" id="addrSuggestions" style="display:none"></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100" id="placeOrderBtn">
+          <i class="ri-secure-payment-line"></i> Confirm Order
+        </button>
+      </form>
     </div>
 
-    <!-- Toast -->
-    <div id="toast" class="toast" style="opacity:0;transform:translateY(20px);display:none">
-        <i id="toast-icon" class="ri-information-line"></i>
-        <span id="toast-message">Message</span>
+    <!-- Success view -->
+    <div id="orderSuccessView" style="display:none">
+      <div class="order-success">
+        <div class="success-icon"><i class="ri-checkbox-circle-line"></i></div>
+        <h3>Order Confirmed!</h3>
+        <p id="orderSuccessMsg">Your order has been placed successfully.</p>
+        <div class="order-id-chip" id="orderIdChip"></div>
+        <div style="display:flex;gap:.75rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap">
+          <button onclick="closeModal('orderModal')" class="btn btn-outline" style="width:auto;padding:.65rem 1.5rem">Continue Shopping</button>
+          <button onclick="closeModal('orderModal');showMyOrders()" class="btn btn-primary" style="width:auto;padding:.65rem 1.5rem" id="viewOrdersBtn" style="display:none">View My Orders</button>
+        </div>
+      </div>
     </div>
+  </div>
+</div>
 
-    <script src="store.js"></script>
+<!-- Profile / Address Modal -->
+<div class="overlay hidden" id="profileModal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal('profileModal')"><i class="ri-close-line"></i></button>
+    <p class="modal-title"><i class="ri-user-line" style="color:var(--primary)"></i> My Profile</p>
+    <p class="modal-sub" id="profileSubtitle">Manage your account</p>
+
+    <div id="profileInfo" style="margin-bottom:1.5rem;padding:1rem;background:var(--bg-elevated);border-radius:var(--radius-sm);border:1px solid var(--border)"></div>
+
+    <p style="font-size:.9rem;font-weight:600;margin-bottom:.75rem;color:var(--text-soft)">
+      <i class="ri-map-pin-line" style="color:var(--primary)"></i> Saved Addresses
+    </p>
+    <div id="savedAddressesList" style="margin-bottom:1rem"></div>
+
+    <div class="input-group">
+      <label>Add / Update Address</label>
+      <textarea id="newAddressInput" rows="2" placeholder="123 Main St, City, State - 123456"></textarea>
+    </div>
+    <button onclick="saveNewAddress()" class="btn btn-primary" style="width:auto;padding:.65rem 1.5rem">
+      <i class="ri-save-line"></i> Save Address
+    </button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast" role="alert" aria-live="polite">
+  <i id="toast-icon" class="ri-checkbox-circle-line"></i>
+  <span id="toast-message">Message</span>
+</div>
+
+<script src="store.js"></script>
 </body>
 </html>
